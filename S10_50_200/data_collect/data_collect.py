@@ -102,11 +102,11 @@ def savetiff2(path2save, scanid_list):
         io.imsave(rf'{path2save}/{str(i).zfill(3)}_{scanid}_Mn.tiff', np.float32(Mn))
 
 
-hr_train_path = r'D:/Research_data/RCAN_HXN/Natural_images_norm_scale2_8_finetune_S10/img_train_hr'
-lr_train_path = r'D:/Research_data/RCAN_HXN/Natural_images_norm_scale2_8_finetune_S10/img_train_lr'
+hr_train_path = r'D:\Research_data\RCAN_ZSSR\S10_50_200\data_collect/img_train_hr'
+lr_train_path = r'D:\Research_data\RCAN_ZSSR\S10_50_200\data_collect/img_train_lr'
 
-hr_eval_path = r'D:/Research_data/RCAN_HXN/Natural_images_norm_scale2_8_finetune_S10/img_eval_hr'
-lr_eval_path = r'D:/Research_data/RCAN_HXN/Natural_images_norm_scale2_8_finetune_S10/img_eval_lr'
+hr_eval_path = r'D:\Research_data\RCAN_ZSSR\S10_50_200\data_collect/img_eval_hr'
+lr_eval_path = r'D:\Research_data\RCAN_ZSSR\S10_50_200\data_collect/img_eval_lr'
 
 for path in [hr_train_path, lr_train_path, hr_eval_path, lr_eval_path]:
     if not os.path.exists(path):

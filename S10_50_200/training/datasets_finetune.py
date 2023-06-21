@@ -92,8 +92,8 @@ class EvalDataset(Dataset):
             lr = np.array(f['lr'][str(idx)][::])
             hr = np.array(f['hr'][str(idx)][::])
             
-            lr -= 0.437
-            hr -= 0.437
+            lr -= 0.0703
+            hr -= 0.0703
 
             lr = lr.astype(np.float32).transpose([2, 0, 1]) 
             hr = hr.astype(np.float32).transpose([2, 0, 1])

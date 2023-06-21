@@ -8,7 +8,7 @@ from tensorboardX import SummaryWriter
 import os
 import argparse
 import os
-os.chdir(r'D:\Research_data\RCAN_HXN\RCAN_official\implementation')
+os.chdir(r'D:\Research_data\RCAN_ZSSR\S10_50_200\training')
 import copy
 import numpy as np
 from PIL import Image
@@ -21,7 +21,7 @@ from torch.utils.data.dataloader import DataLoader
 from tqdm import tqdm
 
 from model import RCAN
-from datasets import TrainDataset, EvalDataset
+from datasets_finetune import TrainDataset, EvalDataset
 from utils import AverageMeter, calc_psnr, convert_rgb_to_y, denormalize, dataset_visualization, tensor2numpy, PSNR
 import matplotlib.pyplot as plt
 # from predict_from_png.py import tensor2numpy
@@ -35,14 +35,14 @@ def tensor2numpy(inputs):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--train-file', type=str, default=r'D:/Research_data/RCAN_HXN/RCAN_official/implementation/DIV_fly_scan_gray_2_submean.h5')
-    parser.add_argument('--eval-file', type=str, default=r'D:/Research_data/RCAN_HXN/RCAN_official/implementation/DIV_fly_scan_gray_eval_2_8_submean.h5')
-    parser.add_argument('--outputs-dir', type=str, default=r'./outputs_scale_2_8_mse_finetune_submean')
-    parser.add_argument('--weights-file', type=str, default=r'D:/Research_data/RCAN_HXN/RCAN_official/implementation/outputs_scale_2_8_mse/x4/x4/best.pth')
+    parser.add_argument('--train-file', type=str, default=r'D:/Research_data/RCAN_ZSSR/S10_50_200/training/DIV_fly_scan_gray_finetune.h5')
+    parser.add_argument('--eval-file', type=str, default=r'D:/Research_data/RCAN_ZSSR/S10_50_200/training/DIV_fly_scan_gray_eval_finetune.h5')
+    parser.add_argument('--outputs-dir', type=str, default=r'./outputs_scale_2_8_l1_finetune_submean')
+    parser.add_argument('--weights-file', type=str, default=r'D:/Research_data/RCAN_HXN/RCAN_official/Natural_2_8_pystack_align_submean/outputs_scale_2_8_submean_vgg_8_mse_pystackalign_l1/x4/x4/best.pth')
     # parser.add_argument('--weights-file', type=str, default=r'D:/Research_data/RCAN_HXN/Natural_images_norm_scale2_8/outputs_scale_2/x4/x4/best.pth')
     parser.add_argument('--patch_size', type=int, default=64)
     parser.add_argument('--batch_size', type=int, default=8)
-    parser.add_argument('--num_epochs', type=int, default=800)
+    parser.add_argument('--num_epochs', type=int, default=600)
     parser.add_argument('--lr', type=float, default=1e-4)
     # parser.add_argument('--threads', type=int, default=8)
     parser.add_argument('--seed', type=int, default=123)
@@ -79,11 +79,16 @@ if __name__ == '__main__':
     if not os.path.exists(args.outputs_dir):
         os.makedirs(args.outputs_dir)
 
-    log_dir = r'D:\Research_data\RCAN_HXN\RCAN_official\implementation\logs'
-    if not os.path.exists(log_dir):
-        os.makedirs(log_dir)
-    writer = SummaryWriter(log_dir)
+    # log_dir = r'D:\Research_data\RCAN_HXN\RCAN_official\implementation\logs'
+    # if not os.path.exists(log_dir):
+    #     os.makedirs(log_dir)
+    # writer = SummaryWriter(log_dir)
 
+
+    cudnn.benchmark = True
+    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+    model = RCAN(args).to(device)
+    
     if args.weights_file is not None:
         state_dict = model.state_dict()
         for n, p in torch.load(args.weights_file, map_location=lambda storage, loc: storage).items():
@@ -93,9 +98,7 @@ if __name__ == '__main__':
             else:
                 raise KeyError(n)
     
-    cudnn.benchmark = True
-    device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-    model = RCAN(args).to(device)
+
     
     # if args.weights_file is not None:
     #     state_dict = model.state_dict()
@@ -106,18 +109,18 @@ if __name__ == '__main__':
     #         else:
     #             raise KeyError(n)
 
-    criterion = nn.MSELoss()
-    # criterion = nn.L1Loss()
+    # criterion = nn.MSELoss()
+    criterion = nn.L1Loss()
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
 
-    train_dataset = TrainDataset(args.train_file, patch_size=args.patch_size, scale=args.scale)
+    train_dataset = TrainDataset(args.train_file, patch_size=args.patch_size, scale=args.scale, transform=None)
     # dataset_visualization(train_dataset, 250)
     train_dataloader = DataLoader(dataset=train_dataset,
                                   batch_size=args.batch_size,
                                   shuffle=True,
                                   num_workers=args.num_workers,
                                   pin_memory=True)
-    eval_dataset = EvalDataset(args.eval_file)
+    eval_dataset = EvalDataset(args.eval_file, transform=None)
     eval_dataloader = DataLoader(dataset=eval_dataset, batch_size=1)
 
     best_weights = copy.deepcopy(model.state_dict())
@@ -129,7 +132,7 @@ if __name__ == '__main__':
 
     for epoch in range(args.num_epochs):
         for param_group in optimizer.param_groups:
-            param_group['lr'] = args.lr * (0.5 ** (epoch // int(args.num_epochs * 0.125)))
+            param_group['lr'] = args.lr * (0.5 ** (epoch // int(args.num_epochs * 0.33)))
 
         model.train()
         epoch_losses = AverageMeter()
@@ -158,7 +161,7 @@ if __name__ == '__main__':
                 t.set_postfix(loss='{:.6f}'.format(epoch_losses.avg))
                 t.update(len(inputs))
             log_loss.append(epoch_losses.avg)
-            writer.add_scalar('Loss/train', epoch_losses.avg, epoch)
+            # writer.add_scalar('Loss/train', epoch_losses.avg, epoch)
             
         if (epoch + 1) % 20 == 0:
             torch.save(model.state_dict(), os.path.join(args.outputs_dir, 'epoch_{}.pth'.format(epoch)))
@@ -188,7 +191,7 @@ if __name__ == '__main__':
 
         print('eval psnr: {:.2f}'.format(epoch_psnr.avg))
         log_psnr.append(epoch_psnr.avg)
-        writer.add_scalar('PSNR/eval', epoch_psnr.avg, epoch)
+        # writer.add_scalar('PSNR/eval', epoch_psnr.avg, epoch)
         
         if epoch_psnr.avg > best_psnr:
             best_epoch = epoch
@@ -196,7 +199,7 @@ if __name__ == '__main__':
             best_weights = copy.deepcopy(model.state_dict())
     
     
-    writer.close()
+    # writer.close()
     
     print('best epoch: {}, psnr: {:.2f}'.format(best_epoch, best_psnr))
     torch.save(best_weights, os.path.join(args.outputs_dir, 'best.pth'))

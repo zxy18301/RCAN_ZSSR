@@ -14,7 +14,7 @@ from torchvision.transforms import transforms
 from skimage import io
 
 import os
-os.chdir(r'D:\Research_data\RCAN_HXN\RCAN_official\Natural_2_8_pystack_align_submean_finetune')
+os.chdir(r'D:\Research_data\RCAN_ZSSR\S10_50_200\training')
 
 import sys
 # sys.path.append(os.getcwd())
@@ -59,10 +59,10 @@ def align_hr_lr(hr, lr):
 if __name__=='__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--image-hr-path', type=str, default=r'D:/Research_data/RCAN_HXN/Natural_images_norm_scale2_8_finetune/img_train_hr')
-    parser.add_argument('--image-lr-path', type=str, default=r'D:/Research_data/RCAN_HXN/Natural_images_norm_scale2_8_finetune/img_train_lr')
-    parser.add_argument('--eval-hr-path', type=str, default=r'D:/Research_data/RCAN_HXN/Natural_images_norm_scale2_8_finetune/img_eval_hr')
-    parser.add_argument('--eval-lr-path', type=str, default=r'D:/Research_data/RCAN_HXN/Natural_images_norm_scale2_8_finetune/img_eval_lr')
+    parser.add_argument('--image-hr-path', type=str, default=r'D:\Research_data\RCAN_ZSSR\S10_50_200\data_collect\img_train_hr')
+    parser.add_argument('--image-lr-path', type=str, default=r'D:\Research_data\RCAN_ZSSR\S10_50_200\data_collect\img_train_lr')
+    parser.add_argument('--eval-hr-path', type=str, default=r'D:\Research_data\RCAN_ZSSR\S10_50_200\data_collect\img_eval_hr')
+    parser.add_argument('--eval-lr-path', type=str, default=r'D:\Research_data\RCAN_ZSSR\S10_50_200\data_collect\img_eval_lr')
     parser.add_argument('--output_path', type=str, default=r'.\DIV_fly_scan_gray_finetune.h5')
     parser.add_argument('--output-path-eval', type=str, default=r'.\DIV_fly_scan_gray_eval_finetune.h5')
     parser.add_argument('--check-flag', type=int, default=0)
@@ -127,83 +127,83 @@ if __name__=='__main__':
         
         # data augmentation here
         for j in range(args.random_num):
-            for i in range(args.num_cropping):
-                if j == 0:
-                    
-                    hr_ = hr.copy()
-                    lr_ = lr.copy()
-                    hr_ = NormalizeData(hr_)
-                    lr_ = NormalizeData(lr_)
-                    
-                    lr_, hr_ = random_crop(lr_, hr_, args.patch_size, args.scale)
-                    
-                    
-                    hr_ = np.expand_dims(hr_, 2)
-                    lr_ = np.expand_dims(lr_, 2)
+            # for i in range(args.num_cropping):
+            if j == 0:
                 
-    
-                    hr_group.create_dataset(str(patch_idx), data=hr_)
-                    lr_group.create_dataset(str(patch_idx), data=lr_)
-                    
-                    patch_idx+=1
-                    
-                elif j == 1:
-                    
-                    # horizontal flip
-                    lr_ = lr[:, ::-1].copy()
-                    hr_ = hr[:, ::-1].copy()
-                    
-                    lr_ = NormalizeData(lr_)
-                    hr_ = NormalizeData(hr_)
-                    
-                    lr_, hr_ = random_crop(lr_, hr_, args.patch_size, args.scale)
-                    
-                    hr_ = np.expand_dims(hr_, 2)
-                    lr_ = np.expand_dims(lr_, 2)
+                hr_ = hr.copy()
+                lr_ = lr.copy()
+                hr_ = NormalizeData(hr_)
+                lr_ = NormalizeData(lr_)
                 
-                    lr_group.create_dataset(str(patch_idx), data=lr_)
-                    hr_group.create_dataset(str(patch_idx), data=hr_)
-                    
-                    patch_idx+=1
-                    
-                elif j == 2:
-                    
-                    # vertical flip
-                    lr_ = lr[::-1, :].copy()
-                    hr_ = hr[::-1, :].copy()
-                    
-                    lr_ = NormalizeData(lr_)
-                    hr_ = NormalizeData(hr_)
-                    
-                    lr_, hr_ = random_crop(lr_, hr_, args.patch_size, args.scale)
-                    
-                    hr_ = np.expand_dims(hr_, 2)
-                    lr_ = np.expand_dims(lr_, 2)
+                # lr_, hr_ = random_crop(lr_, hr_, args.patch_size, args.scale)
                 
-                    lr_group.create_dataset(str(patch_idx), data=lr_)
-                    hr_group.create_dataset(str(patch_idx), data=hr_)
-                    
-                    patch_idx+=1
-                    
-                else:
-                    
-                    # rotate 90
-                    lr_ = np.rot90(lr, axes=(1, 0)).copy()
-                    hr_ = np.rot90(hr, axes=(1, 0)).copy()
-                    
-                    lr_ = NormalizeData(lr_)
-                    hr_ = NormalizeData(hr_)
-                    
-                    lr_, hr_ = random_crop(lr_, hr_, args.patch_size, args.scale)
-                    
+                
+                hr_ = np.expand_dims(hr_, 2)
+                lr_ = np.expand_dims(lr_, 2)
+            
 
-                    hr_ = np.expand_dims(hr_, 2)
-                    lr_ = np.expand_dims(lr_, 2)
+                hr_group.create_dataset(str(patch_idx), data=hr_)
+                lr_group.create_dataset(str(patch_idx), data=lr_)
                 
-                    lr_group.create_dataset(str(patch_idx), data=lr_)
-                    hr_group.create_dataset(str(patch_idx), data=hr_)
-                    
-                    patch_idx+=1
+                patch_idx+=1
+                
+            elif j == 1:
+                
+                # horizontal flip
+                lr_ = lr[:, ::-1].copy()
+                hr_ = hr[:, ::-1].copy()
+                
+                lr_ = NormalizeData(lr_)
+                hr_ = NormalizeData(hr_)
+                
+                # lr_, hr_ = random_crop(lr_, hr_, args.patch_size, args.scale)
+                
+                hr_ = np.expand_dims(hr_, 2)
+                lr_ = np.expand_dims(lr_, 2)
+            
+                lr_group.create_dataset(str(patch_idx), data=lr_)
+                hr_group.create_dataset(str(patch_idx), data=hr_)
+                
+                patch_idx+=1
+                
+            elif j == 2:
+                
+                # vertical flip
+                lr_ = lr[::-1, :].copy()
+                hr_ = hr[::-1, :].copy()
+                
+                lr_ = NormalizeData(lr_)
+                hr_ = NormalizeData(hr_)
+                
+                # lr_, hr_ = random_crop(lr_, hr_, args.patch_size, args.scale)
+                
+                hr_ = np.expand_dims(hr_, 2)
+                lr_ = np.expand_dims(lr_, 2)
+            
+                lr_group.create_dataset(str(patch_idx), data=lr_)
+                hr_group.create_dataset(str(patch_idx), data=hr_)
+                
+                patch_idx+=1
+                
+            else:
+                
+                # rotate 90
+                lr_ = np.rot90(lr, axes=(1, 0)).copy()
+                hr_ = np.rot90(hr, axes=(1, 0)).copy()
+                
+                lr_ = NormalizeData(lr_)
+                hr_ = NormalizeData(hr_)
+                
+                # lr_, hr_ = random_crop(lr_, hr_, args.patch_size, args.scale)
+                
+
+                hr_ = np.expand_dims(hr_, 2)
+                lr_ = np.expand_dims(lr_, 2)
+            
+                lr_group.create_dataset(str(patch_idx), data=lr_)
+                hr_group.create_dataset(str(patch_idx), data=hr_)
+                
+                patch_idx+=1
         
         print(i, patch_idx, hr_.shape, lr_.shape)
         
@@ -253,9 +253,9 @@ if __name__=='__main__':
     
     
     if args.check_flag:
-        h5_fn = r'D:/Research_data/RCAN_HXN/RCAN_official/Natural_2_8_pystack_align_submean_finetune/DIV_fly_scan_gray_finetune.h5'
+        h5_fn = r'D:/Research_data/RCAN_ZSSR/S10_50_200/training/DIV_fly_scan_gray_finetune.h5'
         f = h5py.File(h5_fn, 'r')
-        idx = 529
+        idx = 52
         # idx = 10
         hr = np.array(f['hr'][str(idx)])
         lr = np.array(f['lr'][str(idx)])
