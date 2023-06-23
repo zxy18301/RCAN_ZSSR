@@ -7,6 +7,7 @@ Created on Tue Aug  2 01:06:00 2022
 
 import argparse
 import os
+os.chdir(r'D:\Research_data\RCAN_ZSSR\S10_50_200\training')
 import copy
 import numpy as np
 from PIL import Image
@@ -19,7 +20,7 @@ from torch.utils.data.dataloader import DataLoader
 from tqdm import tqdm
 
 from model import RCAN
-from datasets import TrainDataset, EvalDataset
+from datasets_finetune import TrainDataset, EvalDataset
 from utils import AverageMeter, calc_psnr, convert_rgb_to_y, denormalize, dataset_visualization, tensor2numpy, PSNR
 import matplotlib.pyplot as plt
 import cv2
@@ -43,9 +44,9 @@ if __name__ == '__main__':
     parser.add_argument('--eval-file', type=str, default=r'./DIV_fly_scan_gray_eval_bicubic_test.h5')
     parser.add_argument('--outputs-dir', type=str, default=r'./outputs_scale_bicubic_test_l1')
     # parser.add_argument('--weights-file', type=str, default=r'D:/Research_data/RCAN_HXN/RCAN_official/Natural_2_8_pystack_align_submean_finetune/outputs_scale_2_8_l1_finetune_submean_freeze2/x4/x4/best.pth')
-    parser.add_argument('--weights-file', type=str, default=r'D:/Research_data/RCAN_HXN/RCAN_official/implementation/outputs_scale_2_8_mse_finetune_submean/x4/x4/best.pth')
-    parser.add_argument('--image_gt', type=str, default=r'D:/Research_data/RCAN_HXN/Natural_images_norm_scale2_8_finetune/img_eval_hr/056.tiff')
-    parser.add_argument('--image_lr', type=str, default=r'D:/Research_data/RCAN_HXN/Natural_images_norm_scale2_8_finetune/img_eval_lr/056.tiff')
+    parser.add_argument('--weights-file', type=str, default=r'D:/Research_data/RCAN_ZSSR/S10_50_200/training/outputs_scale_2_8_l1_finetune_submean/x4/x4/best.pth')
+    parser.add_argument('--image_gt', type=str, default=r'D:/Research_data/RCAN_ZSSR/S10_50_200/data_collect/img_eval_hr/000_203209_Zn.tiff')
+    parser.add_argument('--image_lr', type=str, default=r'D:/Research_data/RCAN_ZSSR/S10_50_200/data_collect/img_eval_lr/000_203758_Zn.tiff')
     
     # parser.add_argument('--image_gt', type=str, default=r'D:/Research_data/RCAN_HXN/Natural_images_norm_scale2_8_finetune_S10/img_eval_hr/009_203239.tiff')
     # parser.add_argument('--image_lr', type=str, default=r'D:/Research_data/RCAN_HXN/Natural_images_norm_scale2_8_finetune_S10/img_eval_lr/009_203788.tiff')
